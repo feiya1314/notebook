@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Note Book</string>
+    <string name="action_settings">Settings</string>
+    <string name="appwidget_text" translatable="false">EXAMPLE</string>
+    <string name="add_widget" translatable="false">Add widget</string>
+
+    <string name="title_activity_edit_note" translatable="false">EditNoteActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content" translatable="false">DUMMY\nCONTENT</string>
+    <string name="edit_note_init">edit your note here </string>
+    <string name="title_activity_main">MainActivity</string>
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:id="@+id/page1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:divider="@drawable/dividerline"
+    android:showDividers="middle">
+    <TextView
+        android:id="@+id/note_title"
+        android:background="@drawable/title_shape"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:textColor="@color/note_text_color"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:maxLength="20"
+        tools:text="page1"/>
+    <!--可以试试添加滚动属性  android:scrollbars="vertical" android:text="@string/big_text" -->
+    <TextView
+        android:id="@+id/note_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="9dp"
+        android:layout_marginRight="9dp"
+        android:layout_gravity="center_horizontal"
+        android:text="page1-write your note"
+        android:textColor="@color/note_text_color"
+        android:scrollbars="vertical"
+        android:textSize="14sp"/>
+
+</LinearLayout>
