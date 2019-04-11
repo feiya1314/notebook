@@ -24,4 +24,8 @@ public class Utils {
         }
         return date;
     }
+
+    public static boolean isStringEmpty(String str) {
+        return str == null ||  str.isEmpty();
+    }
 }
