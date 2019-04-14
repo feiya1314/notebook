@@ -1,14 +1,19 @@
 package com.feiya.me.notebook.model;
 
+import com.feiya.me.notebook.Constant;
+
 /**
  * Created by feiya on 2016/9/17.
  */
 public class NoteItem {
 
-    private String content;
+    private String content = Constant.INIT_NOTE_CONTENT;
     private String writingDate;
-    private String title;
-    private int pageId;
+    private String modifyDate;
+    private String nodeType = "未分类";
+    private String title = Constant.INIT_NOTE_TITLE;
+    private int pageId = 0;
+    private int currentPage = 0;
     private int favorite = 0;
     private int widgetId;
     private int changedFlag = 0;
@@ -37,6 +42,22 @@ public class NoteItem {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getModifyDate() {
+        return modifyDate;
+    }
+
+    public void setModifyDate(String modifyDate) {
+        this.modifyDate = modifyDate;
+    }
+
+    public String getNodeType() {
+        return nodeType;
+    }
+
+    public void setNodeType(String nodeType) {
+        this.nodeType = nodeType;
     }
 
     public String getContent() {
@@ -85,5 +106,13 @@ public class NoteItem {
 
     public void setChangedFlag(int changedFlag) {
         this.changedFlag = changedFlag;
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
     }
 }
