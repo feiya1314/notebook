@@ -11,13 +11,19 @@ public interface IDatabaseManager extends  Closeable {
 
     int updateNoteItem(NoteItem noteItem, int widgetId);
 
+    int updateTitle(int widgetId, int pageId, String title);
+
+    int updateContent(int widgetId, int pageId, String content);
+
     void deleteNoteItemByWId(int widgetId);
 
-    NoteItem queryNoteItem(int widgetId);
+    NoteItem queryFirstNoteItem(int widgetId);
+
+    NoteItem queryNoteItem(int widgetId, int pageId);
 
     List<NoteItem> queryNoteList(int widgetId);
 
-    void changeFlag(int widgetId, boolean flag);
+    void changeFlag(int widgetId, int pageId, boolean flag);
 
     NoteItem queryCurrentPage(int widgetId);
 

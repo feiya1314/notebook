@@ -11,11 +11,11 @@
         android:id="@+id/note_title"
         android:background="@drawable/title_shape"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:gravity="center_horizontal|center_vertical"
         android:textColor="@color/note_text_color"
         android:textStyle="bold"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:maxLength="20"
         tools:text="page1"/>
     <!--可以试试添加滚动属性  android:scrollbars="vertical" android:text="@string/big_text" -->
@@ -30,6 +30,6 @@
         android:text="page1-write your note"
         android:textColor="@color/note_text_color"
         android:scrollbars="vertical"
-        android:textSize="14sp"/>
+        android:textSize="12sp"/>
 
 </LinearLayout>

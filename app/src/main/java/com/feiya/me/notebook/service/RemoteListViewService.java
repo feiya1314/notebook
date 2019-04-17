@@ -11,24 +11,24 @@ import android.widget.RemoteViewsService;
 import com.feiya.me.notebook.Constant;
 import com.feiya.me.notebook.R;
 import com.feiya.me.notebook.db.DatabaseManager;
+import com.feiya.me.notebook.db.IDatabaseManager;
 import com.feiya.me.notebook.model.NoteItem;
 import com.feiya.me.notebook.utils.Utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by feiya on 2019/3/15.
  */
 public class RemoteListViewService extends RemoteViewsService {
-    private int mWidgetId;
+
     private static final String TAG = RemoteListViewService.class.getSimpleName();
     private static final int pagesCount = 1;
-    private ArrayList<NoteItem> noteItems = new ArrayList<>();
-    private DatabaseManager databaseManager;
 
-    public RemoteListViewService()
-    {
+    public RemoteListViewService() {
         Log.i(TAG, "RemoteListViewService was constructed");
     }
 
@@ -39,60 +39,94 @@ public class RemoteListViewService extends RemoteViewsService {
     }
 
     private class ListViewFactory implements RemoteViewsFactory {
+        private List<NoteItem> noteItems = new ArrayList<>();
+        private IDatabaseManager databaseManager;
+        private int mWidgetId;
 
         public ListViewFactory(Context context, Intent intent) {
-            mWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
-            Log.i(TAG,"service  created widgetid : "+String.valueOf(mWidgetId));
+            // mWidgetId = Integer.valueOf(intent.getData().getSchemeSpecificPart());
+            String type = intent.getType();
+            //mWidgetId = Utils.isStringEmpty(type) ? 0 : Integer.valueOf(type);
+            mWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, 0);
+            Log.i(TAG, "service created widgetId : " + String.valueOf(mWidgetId));
+            Log.i(TAG, "service created type : " + type);
 
             databaseManager = DatabaseManager.getInstance(context);
         }
 
         /**
-         *  appWidgetManager.notifyAppWidgetViewDataChanged 之后会调用此方法更新页面
+         * Called when your factory is first constructed. The same factory may be shared across
+         * multiple RemoteViewAdapters depending on the intent passed.
+         * 如果耗时长的任务应该在onDataSetChanged或者getViewAt中处理
+         */
+        @Override
+        public void onCreate() {
+            Log.i(TAG, "RemoteListViewService onCreated");
+            List<NoteItem> noteItemList = databaseManager.queryNoteList(mWidgetId);
+            if (!Utils.isCollectionEmpty(noteItemList)) {
+                Log.i(TAG, "RemoteListViewService onCreated  noteItemList : " + noteItemList);
+                noteItems = noteItemList;
+                return;
+            }
+            Log.i(TAG, "RemoteListViewService onCreated noteitem is empty");
+            for (int i = 0; i < pagesCount; i++) {
+                NoteItem noteItem = new NoteItem(Constant.INIT_NOTE_TITLE);
+                noteItem.setContent(Constant.INIT_NOTE_CONTENT);
+                noteItem.setPageId(i + 1);
+                noteItem.setWidgetId(mWidgetId);
+                String initDate = Utils.dateToString(new Date(System.currentTimeMillis()));
+                noteItem.setWritingDate(initDate);
+                noteItem.setModifyDate(initDate);
+                databaseManager.insertNoteItem(noteItem);
+                noteItems.add(noteItem);
+            }
+        }
+
+        /**
+         * appWidgetManager.notifyAppWidgetViewDataChanged 之后会调用此方法更新页面
          */
         @Override
         public void onDataSetChanged() {
+            // get
             Log.i(TAG, "onDataSetChanged");
             //当某一个widget的某一页有改变时，该页的changedFlag状态会改变，通过查询该Flag就可找出要更新的widget
-            NoteItem noteItem = databaseManager.getItem(databaseManager.queryChangedItem());
-            if (noteItem != null) {
-                noteItems = databaseManager.getItems(databaseManager.queryItemByWidgetId(noteItem.getWidgetId()));
-                Log.i(TAG, "noteItems length" + noteItems.size());
-                databaseManager.changedFlagToFalse();
-            } else {
-                Log.e(TAG, "onDataSetChanged " + String.valueOf(mWidgetId));
-               // isReboot = true;
+            //NoteItem noteItem = databaseManager.queryChangedNoteItem(mWidgetId);
+            //NoteItem noteItem  = databaseManager.queryFirstNoteItem(mWidgetId);
+            List<NoteItem> noteItemFromDB = databaseManager.queryNoteList(mWidgetId);
+            if (!Utils.isCollectionEmpty(noteItemFromDB) && !noteItemFromDB.equals(noteItems)) {
+                noteItems.clear();
+                noteItems.addAll(noteItemFromDB);
+                Log.i(TAG, "noteItems length ： " + noteItems.size());
+                Log.d(TAG, "noteitem : " + noteItems.toArray());
+                //databaseManager.changedFlagToFalse();
             }
         }
 
         /**
          * onDataSetChanged 调用之后也会调用这个，初始化时也会被调用
+         *
          * @param position The position of the item within the Factory's data set of the item whose
          *                 view we want.
          * @return A RemoteViews object corresponding to the data at the specified position.RemoteViewsService向widgetprovider传数据
          */
         @Override
         public RemoteViews getViewAt(int position) {
-            // mWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
             RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.notepage);
 
-            Log.i(TAG,"getViewFromService mWidgetId:" +mWidgetId + "position :"+ position);
+            Log.i(TAG, "getViewFromService mWidgetId: " + mWidgetId + " position : " + position);
             remoteViews.setTextViewText(R.id.note_title, noteItems.get(position).getTitle());
             remoteViews.setTextViewText(R.id.note_content, noteItems.get(position).getContent());
 
             Intent collectionIntent = new Intent();
             collectionIntent.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            collectionIntent.putExtra(Constant.COLLECTION_VIEW_EXTRA, position);
-            //collectionIntent.putExtra(Constant.COLLECTION_VIEW_EXTRA, position);
-            /*Bundle bundle = new Bundle();
-            bundle.putInt(Constant.COLLECTION_VIEW_EXTRA, position);
-            collectionIntent.putExtras(bundle);*/
+            collectionIntent.putExtra(Constant.PAGE_ID, position + 1);
 
             remoteViews.setOnClickFillInIntent(R.id.note_title, collectionIntent);
             remoteViews.setOnClickFillInIntent(R.id.note_content, collectionIntent);
 
             return remoteViews;
         }
+
         /**
          * @return Count of items.
          */
@@ -139,33 +173,17 @@ public class RemoteListViewService extends RemoteViewsService {
         }
 
         /**
-         * Called when your factory is first constructed. The same factory may be shared across
-         * multiple RemoteViewAdapters depending on the intent passed.
-         */
-        @Override
-        public void onCreate() {
-            Log.i(TAG, "RemoteListViewService onCreated");
-            for (int i = 0; i < pagesCount; i++) {
-                NoteItem noteItem = new NoteItem("喂！我是标题");
-                noteItem.setContent("小提示：可通过底部左右箭头翻页！");
-                noteItem.setPageId(i);
-                noteItem.setWidgetId(0);
-                noteItem.setWritingDate(Utils.dateToString(new Date(System.currentTimeMillis())));
-                noteItems.add(noteItem);
-                Log.d(TAG, noteItems.get(i).getContent());
-            }
-        }
-
-
-
-        /**
          * Called when the last RemoteViewsAdapter that is associated with this factory is
          * unbound.
          */
         @Override
         public void onDestroy() {
             Log.i(TAG, "onDestroy");
-            databaseManager.close();
+            try {
+                databaseManager.close();
+            } catch (IOException e) {
+                Log.e(TAG, "error occurs when close database ", e);
+            }
         }
     }
 

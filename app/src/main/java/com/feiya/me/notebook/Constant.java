@@ -7,14 +7,17 @@ public interface Constant {
     String TABLE_NAME = "note";
     String CREATE_NOTE_TABLE = "create table note ("
             + "id integer primary key autoincrement,"
-            + "pageId integer,"
-            + "title text,"
             + "widgetId integer,"
+            + "pageId integer,"
+            + "currentPage integer,"
+            + "title text,"
             + "content text,"
+            + "nodeType text,"
             + "favorite integer,"
             + "changedFlag integer,"
             + "deleted integer,"
-            + "writingDate text)";
+            + "writingDate text,"
+            + "modifyDate text)";
 
     String NEXT_ACTION = "com.feiya.me.notewidget.NEXT_ACTION";
     String PREVIOUS_ACTION = "com.feiya.me.notewidget.PREVIOUS_ACTION";

@@ -8,26 +8,28 @@ import android.util.Log;
 
 import com.feiya.me.notebook.Constant;
 import com.feiya.me.notebook.model.NoteItem;
+import com.feiya.me.notebook.utils.Utils;
 
-import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by feiya on 2016/9/27.
  */
 
-public class DatabaseManager implements Closeable {
+public class DatabaseManager implements IDatabaseManager {
     private static final String TAG = DatabaseManager.class.getSimpleName();
     private SQLiteDatabase db;
     private DatabaseHelper dbHelper;
-    private static volatile DatabaseManager databaseManager;
+    private static volatile IDatabaseManager databaseManager;
 
     private DatabaseManager(Context context) {
         dbHelper = new DatabaseHelper(context);
         db = dbHelper.getWritableDatabase();
     }
 
-    public static DatabaseManager getInstance(Context context) {
+    public static IDatabaseManager getInstance(Context context) {
         if (databaseManager == null) {
             synchronized (DatabaseManager.class) {
                 if (databaseManager == null) {
@@ -38,161 +40,151 @@ public class DatabaseManager implements Closeable {
         return databaseManager;
     }
 
-    /**
-     * @param noteItem which note you want insert to database
-     * @function add a note to sqlite database
-     */
-    public void addItem(NoteItem noteItem) {
+    private Cursor getItemCursorByWid(int widgetId) {
+        String sql = "SELECT * FROM " + Constant.TABLE_NAME + " WHERE widgetId=" + widgetId;
+        return db.rawQuery(sql, null);
+    }
+
+    @Override
+    public long insertNoteItem(NoteItem noteItem) {
         ContentValues contentValues = new ContentValues();
         contentValues.put("title", noteItem.getTitle());
         contentValues.put("content", noteItem.getContent());
+        contentValues.put("nodeType", noteItem.getNodeType());
         contentValues.put("widgetId", noteItem.getWidgetId());
         contentValues.put("changedFlag", noteItem.getChangedFlag());
         contentValues.put("pageId", noteItem.getPageId());
         contentValues.put("writingDate", noteItem.getWritingDate());
+        contentValues.put("modifyDate", noteItem.getModifyDate());
         contentValues.put("favorite", noteItem.getFavorite());
         contentValues.put("deleted", noteItem.getDeleted());
 
-        db.insert(Constant.TABLE_NAME, null, contentValues);
+        return db.insert(Constant.TABLE_NAME, null, contentValues);
     }
 
-    public void updateItem(NoteItem noteItem, int widgetId, int pageId) {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("title", noteItem.getTitle());
-        contentValues.put("content", noteItem.getContent());
-        contentValues.put("writingDate", noteItem.getWritingDate());
-        Log.d(TAG, "updateItem" + pageId);
-        db.update(Constant.TABLE_NAME, contentValues, "pageId=? ", new String[]{String.valueOf(pageId)});
-    }
-
-    public void updateTitle(int widgetId, int pageId, String title) {
-        String sql = "UPDATE " + Constant.TABLE_NAME + " SET title='" + title +
-                "' WHERE pageId=" + pageId + " AND widgetId=" + widgetId;
-        db.execSQL(sql);
-    }
-
-    public void updateContent(int widgetId, int pageId, String content) {
-        String sql = "UPDATE " + Constant.TABLE_NAME + " SET content='" + content +
-                "' WHERE pageId=" + pageId + " AND widgetId=" + widgetId;
-        db.execSQL(sql);
-    }
-
-    public void changedFlagToFalse() {
-        String sql = "UPDATE " + Constant.TABLE_NAME + " SET changedFlag=0 WHERE changedFlag=1";
-        db.execSQL(sql);
-    }
-
-    public void changedFlagToTrue(int widgetId, int pageId) {
-        String sql = "UPDATE " + Constant.TABLE_NAME + " SET changedFlag=1 WHERE widgetId=" + widgetId + " AND pageId=" + pageId;
-        db.execSQL(sql);
-    }
-
-    public Cursor queryTopPageItem(int widgetId) {
-        String sql = "SELECT * FROM " + Constant.TABLE_NAME + " WHERE widgetId=" + widgetId + " AND favorite=1";
-        Log.d(TAG, "queryTopPageItem ");
-        return db.rawQuery(sql, null);
-    }
-
-    public void topPageToTrue(int widgetId, int pageId) {
-        String sql = "UPDATE " + Constant.TABLE_NAME + " SET favorite=1 WHERE widgetId=" + widgetId + " AND pageId=" + pageId;
-        db.execSQL(sql);
-    }
-
-    public void topPageToFalse(int widgetId) {
-        String sql = "UPDATE " + Constant.TABLE_NAME + " SET favorite=0 WHERE widgetId=" + widgetId + " AND favorite=1";
-        db.execSQL(sql);
-    }
-
-    public void topPageInit() {
-        String sql_1 = "UPDATE " + Constant.TABLE_NAME + " SET favorite=0 WHERE favorite=1";
-        String sql_2 = "UPDATE " + Constant.TABLE_NAME + " SET favorite=1 WHERE pageId=0";
-        db.execSQL(sql_1);
-        db.execSQL(sql_2);
-
-    }
-
-    public ArrayList<NoteItem> getItems(Cursor cursor) {
-        ArrayList<NoteItem> noteItems = new ArrayList<>();
-        if (cursor.getCount() == 0) {
-            Log.e(TAG, "getItems :Cursor's count is 0");
-        } else {
+    @Override
+    public List<NoteItem> queryNoteList(int widgetId) {
+        Cursor cursor = getItemCursorByWid(widgetId);
+        List<NoteItem> noteItems = new ArrayList<>();
+        if (cursor.getCount() > 0) {
             for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                NoteItem noteItem = new NoteItem();
-                noteItem.setPageId(cursor.getInt(1));
-
-                noteItem.setTitle(cursor.getString(2));
-
-                Log.d(TAG, "setTitle " + cursor.getString(2));
-                noteItem.setWidgetId(cursor.getInt(3));
-
-                noteItem.setContent(cursor.getString(4));
-                noteItem.setFavorite(cursor.getInt(5));
-                noteItem.setChangedFlag(cursor.getInt(6));
-                noteItem.setWritingDate(cursor.getString(7));
-                noteItems.add(noteItem);
+                noteItems.add(getNoteItemFromCursor(cursor));
             }
         }
         cursor.close();
         return noteItems;
     }
 
-    public NoteItem getItem(Cursor cursor) {
-        cursor.moveToFirst();
-        Log.d(TAG, "cursor count " + cursor.getCount());
-        if (cursor.getCount() == 0 || cursor.getCount() > 1) {
-            Log.e(TAG, "cursor count is 0 or >1");
-            cursor.close();
-            return null;
-        } else {
-            Log.d(TAG, " getItem");
-            Log.d(TAG, "getdate " + cursor.getString(5));
-            NoteItem noteItem = new NoteItem();
-            noteItem.setPageId(cursor.getInt(1));
-
-            noteItem.setTitle(cursor.getString(2));
-
-            Log.d(TAG, "setTitle " + cursor.getString(2));
-            noteItem.setWidgetId(cursor.getInt(3));
-
-            noteItem.setContent(cursor.getString(4));
-            noteItem.setFavorite(cursor.getInt(5));
-            noteItem.setChangedFlag(cursor.getInt(6));
-            noteItem.setWritingDate(cursor.getString(7));
-            cursor.close();
-            return noteItem;
-        }
+    @Override
+    public int updateNoteItem(NoteItem noteItem, int widgetId) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("title", noteItem.getTitle());
+        contentValues.put("content", noteItem.getContent());
+        contentValues.put("modifyDate", noteItem.getModifyDate());
+        //todo 完善此方法
+        return db.update(Constant.TABLE_NAME, contentValues, "widgetId=? ", new String[]{String.valueOf(widgetId)});
     }
 
-    public Cursor queryChangedItem() {
-        String sql = "SELECT * FROM " + Constant.TABLE_NAME + " WHERE changedFlag=1";
-        Log.d("datamagager", sql);
-        Log.d(TAG, "queryItem  " + sql);
 
-        return db.rawQuery(sql, null);
+    @Override
+    public int updateTitle(int widgetId, int pageId, String title) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("title", title);
+        contentValues.put("modifyDate", Utils.dateToString(new Date(System.currentTimeMillis())));
+        String whereClause = "widgetId=? and pageId=?";
+        return db.update(Constant.TABLE_NAME, contentValues, whereClause, new String[]{String.valueOf(widgetId),String.valueOf(pageId)});
     }
 
-    public void deleteItemsByWidgetId(int widgetId) {
+    @Override
+    public int updateContent(int widgetId, int pageId, String content) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("content", content);
+        contentValues.put("modifyDate", Utils.dateToString(new Date(System.currentTimeMillis())));
+        String whereClause = "widgetId=? and pageId=?";
+        return db.update(Constant.TABLE_NAME, contentValues, whereClause, new String[]{String.valueOf(widgetId),String.valueOf(pageId)});
+    }
+
+    @Override
+    public void deleteNoteItemByWId(int widgetId) {
         String sql = "DELETE FROM " + Constant.TABLE_NAME + " WHERE widgetId=" + widgetId;
         db.execSQL(sql);
     }
 
-    public Cursor queryItem(int widgetId, int pageId) {
-        String sql = "SELECT * FROM " + Constant.TABLE_NAME + " WHERE pageId=" + pageId + " AND widgetId=" + widgetId;
-        Log.d("datamagager", sql);
-        Log.d(TAG, "queryItem  " + sql);
+    @Override
+    public NoteItem queryFirstNoteItem(int widgetId) {
+        Cursor cursor = getItemCursorByWid(widgetId);
+        if (cursor.getCount() == 0)
+        {
+            return null;
+        }
+        if (cursor.getCount() > 1) {
+            Log.w(TAG, "note item count is 0 or >1");
+        }
+        cursor.moveToFirst();
+        NoteItem noteItem = getNoteItemFromCursor(cursor);
+        cursor.close();
 
-        return db.rawQuery(sql, null);
+        return noteItem;
     }
 
-    public Cursor queryItemByWidgetId(int widgetId) {
-        String sql = "SELECT * FROM " + Constant.TABLE_NAME
-                + " WHERE widgetId="
-                + widgetId;
-        return db.rawQuery(sql, null);
+    @Override
+    public NoteItem queryNoteItem(int widgetId, int pageId) {
+        String sql = "SELECT * FROM " + Constant.TABLE_NAME + " WHERE widgetId=" + widgetId + " and pageId="+pageId;
+        Cursor cursor = db.rawQuery(sql, null);
+        if (cursor.getCount() == 0)
+        {
+            return null;
+        }
+        if (cursor.getCount() > 1) {
+            Log.w(TAG, "note item count by widgetId and pageId is 0 or >1");
+        }
+        cursor.moveToFirst();
+        NoteItem noteItem = getNoteItemFromCursor(cursor);
+        cursor.close();
+        return noteItem;
     }
 
-    public int getTopPageId(int widgetId) {
-        return getItem(queryTopPageItem(widgetId)).getPageId();
+    private NoteItem getNoteItemFromCursor(Cursor cursor) {
+        NoteItem noteItem = new NoteItem();
+        noteItem.setPageId(cursor.getInt(cursor.getColumnIndex("pageId")));
+        noteItem.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+        noteItem.setWidgetId(cursor.getInt(cursor.getColumnIndex("widgetId")));
+        noteItem.setContent(cursor.getString(cursor.getColumnIndex("content")));
+        noteItem.setFavorite(cursor.getInt(cursor.getColumnIndex("favorite")));
+        noteItem.setChangedFlag(cursor.getInt(cursor.getColumnIndex("changedFlag")));
+        noteItem.setWritingDate(cursor.getString(cursor.getColumnIndex("writingDate")));
+        noteItem.setModifyDate(cursor.getString(cursor.getColumnIndex("modifyDate")));
+        noteItem.setCurrentPage(cursor.getInt(cursor.getColumnIndex("currentPage")));
+        noteItem.setDeleted(cursor.getInt(cursor.getColumnIndex("deleted")));
+
+        return noteItem;
+    }
+
+    @Override
+    public void changeFlag(int widgetId, int pageId, boolean flag) {
+        String sql = flag ? "UPDATE " + Constant.TABLE_NAME + " SET changedFlag=1 WHERE widgetId = "+widgetId +" and pageId=" +pageId:
+                "UPDATE " + Constant.TABLE_NAME + " SET changedFlag=0 WHERE widgetId = "+widgetId +" and pageId=" +pageId;
+
+        db.execSQL(sql);
+    }
+
+    @Override
+    public NoteItem queryChangedNoteItem(int widgetId) {
+        String sql = "SELECT * FROM " + Constant.TABLE_NAME + " WHERE widgetId= " + widgetId + " and changedFlag=1";
+        Cursor cursor = db.rawQuery(sql, null);
+        cursor.moveToFirst();
+
+        return getNoteItemFromCursor(cursor);
+    }
+
+    @Override
+    public NoteItem queryCurrentPage(int widgetId) {
+        return null;
+    }
+
+    @Override
+    public void changeCurrentPage(int widget, int pageId) {
+
     }
 
     @Override

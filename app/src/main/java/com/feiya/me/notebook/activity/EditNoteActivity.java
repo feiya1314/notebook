@@ -20,6 +20,7 @@ import android.widget.EditText;
 import com.feiya.me.notebook.Constant;
 import com.feiya.me.notebook.R;
 import com.feiya.me.notebook.db.DatabaseManager;
+import com.feiya.me.notebook.db.IDatabaseManager;
 import com.feiya.me.notebook.model.NoteItem;
 
 
@@ -28,8 +29,7 @@ public class EditNoteActivity extends Activity {
     private EditText eTitle;
     private EditText eContent;
     private FloatingActionButton btn_save;
-    // private LinearLayout linearLayout;
-    private DatabaseManager databaseManager;
+    private IDatabaseManager databaseManager;
 
     private Context mContext;
     private Intent intent;
@@ -69,7 +69,7 @@ public class EditNoteActivity extends Activity {
         btn_save = findViewById(R.id.save);
 
         databaseManager = DatabaseManager.getInstance(mContext);
-        noteItem = databaseManager.getItem(databaseManager.queryItem(widgetId, pageId));
+        noteItem = databaseManager.queryNoteItem(widgetId, pageId);
 
         title = noteItem.getTitle();
         Log.d(TAG, "init title " + title);
@@ -198,7 +198,7 @@ public class EditNoteActivity extends Activity {
             title = eTitle.getText().toString();
             databaseManager.updateTitle(widgetId, pageId, title);
         }
-        databaseManager.changedFlagToTrue(widgetId, pageId);
+        databaseManager.changeFlag(widgetId, pageId,true);
         updateWidget(mContext, pageId);
     }
 
