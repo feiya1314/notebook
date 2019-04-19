@@ -94,7 +94,7 @@ public class NoteWidgetProvider extends AppWidgetProvider {
                 context.startActivity(startActivity);
                 break;
             }
-            case Constant.DATA_CHANGED_ACTION: {
+            /*case Constant.DATA_CHANGED_ACTION: {
                 //ComponentName componentName=new ComponentName(context,NoteWidgetProvider.class);
                 RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.list_view_adapter);
 
@@ -105,9 +105,9 @@ public class NoteWidgetProvider extends AppWidgetProvider {
 
                 appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.page_list_view);
 
-                appWidgetManager.updateAppWidget(widgetId, remoteViews);
+                //appWidgetManager.updateAppWidget(widgetId, remoteViews);
                 break;
-            }
+            }*/
             case Intent.ACTION_SHUTDOWN: {
                 Log.d(TAG, "shutdown");
                 //databaseManager.topPageInit();

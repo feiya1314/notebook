@@ -15,7 +15,7 @@
             android:exported="true">
             <intent-filter android:priority="999">
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.feiya.me.notewidget.COLLECTION_VIEW_ACTION" />
+               <!-- <action android:name="com.feiya.me.notewidget.COLLECTION_VIEW_ACTION" />-->
                 <action android:name="com.feiya.me.notewidget.DATA_CHANGED_ACTION" />
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
             </intent-filter>

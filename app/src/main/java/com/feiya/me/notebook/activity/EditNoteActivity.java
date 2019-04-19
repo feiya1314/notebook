@@ -8,6 +8,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.text.Editable;
@@ -19,6 +20,7 @@ import android.widget.EditText;
 
 import com.feiya.me.notebook.Constant;
 import com.feiya.me.notebook.R;
+import com.feiya.me.notebook.broadcast.WidgetDataChangedReceiver;
 import com.feiya.me.notebook.db.DatabaseManager;
 import com.feiya.me.notebook.db.IDatabaseManager;
 import com.feiya.me.notebook.model.NoteItem;
@@ -43,11 +45,13 @@ public class EditNoteActivity extends Activity {
     private Boolean IsTitleChanged;
     private Boolean IsContentChanged;
 
+    private  WidgetDataChangedReceiver widgetDataChangedReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.warp_edit_note);
+        widgetDataChangedReceiver = new WidgetDataChangedReceiver();
         init();
     }
 
@@ -145,7 +149,13 @@ public class EditNoteActivity extends Activity {
             }
         });
 
+        registerBroadcastReceiver();
+    }
 
+    private void registerBroadcastReceiver(){
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Constant.DATA_CHANGED_ACTION);
+        registerReceiver(widgetDataChangedReceiver,intentFilter);
     }
 
     @Override
@@ -205,6 +215,7 @@ public class EditNoteActivity extends Activity {
     @Override
     protected void onDestroy() {
         //databaseManager.close();
+        unregisterReceiver(widgetDataChangedReceiver);
         super.onDestroy();
     }
 
@@ -215,7 +226,7 @@ public class EditNoteActivity extends Activity {
         Intent intent = new Intent(Constant.DATA_CHANGED_ACTION);
         intent.putExtra(Constant.PAGE_ID, pageId);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-        Log.e(TAG, "activity send data changed action");
-        context.sendBroadcast(intent);
+        Log.i(TAG, "activity send data changed action");
+        sendBroadcast(intent);
     }
 }
