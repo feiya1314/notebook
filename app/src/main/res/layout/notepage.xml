@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:id="@+id/page1"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:divider="@drawable/dividerline"
     android:showDividers="middle">
     <TextView
@@ -18,18 +18,17 @@
         android:textSize="14sp"
         android:maxLength="20"
         tools:text="page1"/>
-    <!--可以试试添加滚动属性  android:scrollbars="vertical" android:text="@string/big_text" -->
     <TextView
         android:id="@+id/note_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginLeft="9dp"
         android:layout_marginRight="9dp"
+        android:background="#88FFFFFF"
         android:layout_gravity="center_horizontal"
-        android:text="page1-write your note"
         android:textColor="@color/note_text_color"
         android:scrollbars="vertical"
-        android:textSize="12sp"/>
+        android:textSize="13sp"/>
 
 </LinearLayout>

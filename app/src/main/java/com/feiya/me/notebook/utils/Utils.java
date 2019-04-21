@@ -33,4 +33,8 @@ public class Utils {
     public static boolean isCollectionEmpty(Collection collection){
         return collection == null || collection.isEmpty();
     }
+
+    public static boolean isArrayEmpty(Object[] arrays){
+        return arrays == null || arrays.length == 0;
+    }
 }

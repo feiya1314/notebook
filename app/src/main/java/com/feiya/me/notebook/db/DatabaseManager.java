@@ -41,7 +41,8 @@ public class DatabaseManager implements IDatabaseManager {
     }
 
     private Cursor getItemCursorByWid(int widgetId) {
-        String sql = "SELECT * FROM " + Constant.TABLE_NAME + " WHERE widgetId=" + widgetId;
+        String sql = new SqlStringBuilder().select().withColumns(null).table(Constant.TABLE_NAME).where().columnEqValue("widgetId",String.valueOf(widgetId)).build();
+        //String sql = "SELECT * FROM " + Constant.TABLE_NAME + " WHERE widgetId=" + widgetId;
         return db.rawQuery(sql, null);
     }
 

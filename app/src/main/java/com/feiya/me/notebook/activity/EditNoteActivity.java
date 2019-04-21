@@ -56,7 +56,6 @@ public class EditNoteActivity extends Activity {
     }
 
     private void init() {
-
         IsTitleChanged = false;
         IsContentChanged = false;
 
@@ -64,24 +63,20 @@ public class EditNoteActivity extends Activity {
         intent = this.getIntent();
         pageId = intent.getIntExtra(Constant.PAGE_ID, 0);
         widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
-        Log.d(TAG, "pageId from intent " + pageId);
-        Log.d(TAG, "widgetId from intent " + widgetId);
+        Log.i(TAG, "init from intent pageId : " + pageId + " widgetId : " + widgetId);
 
         eTitle = findViewById(R.id.edit_note_title);
         eContent = findViewById(R.id.edit_note_content);
-        // linearLayout=(LinearLayout)findViewById(R.id.save_edit_content);
         btn_save = findViewById(R.id.save);
 
         databaseManager = DatabaseManager.getInstance(mContext);
         noteItem = databaseManager.queryNoteItem(widgetId, pageId);
 
         title = noteItem.getTitle();
-        Log.d(TAG, "init title " + title);
         content = noteItem.getContent();
 
         eTitle.setText(title);
         eContent.setText(content);
-
         eTitle.setHint("输入标题");
 
         eTitle.addTextChangedListener(new TextWatcher() {
@@ -138,16 +133,21 @@ public class EditNoteActivity extends Activity {
             }
         });
 `       */
-        btn_save.setOnClickListener(new View.OnClickListener() {
+        btn_save.setOnClickListener(v -> {
+            if (IsTitleChanged || IsContentChanged) {
+                saveNote();
+            }
+            finish();
+        });
+        /*btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (IsTitleChanged || IsContentChanged) {
                     saveNote();
                 }
                 finish();
-                //overridePendingTransition(R.anim.zoomin,R.anim.zoomout);
             }
-        });
+        });*/
 
         registerBroadcastReceiver();
     }
@@ -209,7 +209,7 @@ public class EditNoteActivity extends Activity {
             databaseManager.updateTitle(widgetId, pageId, title);
         }
         databaseManager.changeFlag(widgetId, pageId,true);
-        updateWidget(mContext, pageId);
+        updateWidget(pageId);
     }
 
     @Override
@@ -219,14 +219,11 @@ public class EditNoteActivity extends Activity {
         super.onDestroy();
     }
 
-    private void updateWidget(Context context, int pageId) {
-        //databaseManager.getItem(databaseManager.queryItem(pageId));
-        //noteItem.setTitle(eTitle.getText().toString());
-        //noteItem.setContent(eContent.getText().toString());
+    private void updateWidget(int pageId) {
         Intent intent = new Intent(Constant.DATA_CHANGED_ACTION);
         intent.putExtra(Constant.PAGE_ID, pageId);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-        Log.i(TAG, "activity send data changed action");
+        Log.i(TAG, "edit note activity send data changed broadcast");
         sendBroadcast(intent);
     }
 }

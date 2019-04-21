@@ -10,7 +10,6 @@ import android.widget.RemoteViews;
 import com.feiya.me.notebook.Constant;
 import com.feiya.me.notebook.R;
 import com.feiya.me.notebook.service.RemoteListViewService;
-import com.feiya.me.notebook.widget.NoteWidgetProvider;
 
 public class WidgetDataChangedReceiver extends BroadcastReceiver {
     private static final String TAG = WidgetDataChangedReceiver.class.getSimpleName();

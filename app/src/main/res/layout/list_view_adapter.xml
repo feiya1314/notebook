@@ -3,14 +3,18 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@drawable/note_shape"
+    android:alpha="0.85"
     android:orientation="vertical">
     <!--AdapterViewFlipper中具体的内容会通过remoteview返回给widget，所以此处显示的是空白-->
+ <!--   android:alpha="1"-->
     <ListView
         android:id="@+id/page_list_view"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:flipInterval="5000"
-        android:loopViews="true" />
+        android:loopViews="true"
+        android:overScrollMode="never"
+        android:scrollbars="none" />
 
         <!--empty view-->
         <!--<TextView
