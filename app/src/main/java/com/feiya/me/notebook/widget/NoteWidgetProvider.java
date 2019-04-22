@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -24,6 +25,7 @@ public class NoteWidgetProvider extends AppWidgetProvider {
     private static final String TAG = NoteWidgetProvider.class.getSimpleName();
     private IDatabaseManager databaseManager;
     private int pagesCount = 10;
+    private boolean enabled = false;
 
     /*private Map<Integer, Object> initWidgetMap = new HashMap<>();*/
 
@@ -36,7 +38,12 @@ public class NoteWidgetProvider extends AppWidgetProvider {
             /*if (initWidgetMap.get(appWidgetId) != null) {
                 continue;
             }*/
+            Log.i(TAG, "Widget :" + appWidgetId + " onUpdate");
             registerListener(context, appWidgetManager, appWidgetId);
+            if (enabled){
+                int num = calculateLineNum(appWidgetManager,appWidgetId);
+                Log.d(TAG,"calculateLineNum appWidgetId : " + appWidgetId + " num : " + num);
+            }
         }
     }
 
@@ -75,16 +82,12 @@ public class NoteWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-
         int widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         int pageId = intent.getIntExtra(Constant.PAGE_ID, 0);
         Log.i(TAG, "provider onReceive action : " + action + " widgetId : " + widgetId + " pageId : " + pageId);
 
         switch (action) {
             case Constant.COLLECTION_VIEW_ACTION: {
-                /*Bundle bundle = intent.getExtras();
-                pageId = (int) bundle.get(Constant.PAGE_ID);*/
                 Intent startActivity = new Intent(context, EditNoteActivity.class);
                 startActivity.putExtra(Constant.PAGE_ID, pageId);
                 startActivity.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
@@ -94,20 +97,6 @@ public class NoteWidgetProvider extends AppWidgetProvider {
                 context.startActivity(startActivity);
                 break;
             }
-            /*case Constant.DATA_CHANGED_ACTION: {
-                //ComponentName componentName=new ComponentName(context,NoteWidgetProvider.class);
-                RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.list_view_adapter);
-
-                Intent listViewServiceDataChangedIntent = new Intent(context, RemoteListViewService.class);
-                listViewServiceDataChangedIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-                listViewServiceDataChangedIntent.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                remoteViews.setRemoteAdapter(R.id.page_list_view, listViewServiceDataChangedIntent);
-
-                appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.page_list_view);
-
-                //appWidgetManager.updateAppWidget(widgetId, remoteViews);
-                break;
-            }*/
             case Intent.ACTION_SHUTDOWN: {
                 Log.d(TAG, "shutdown");
                 //databaseManager.topPageInit();
@@ -120,6 +109,22 @@ public class NoteWidgetProvider extends AppWidgetProvider {
         super.onReceive(context, intent);
     }
 
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager,
+                                          int appWidgetId, Bundle newOptions) {
+        //appWidgetManager.getAppWidgetOptions(appWidgetId).
+        //appWidgetManager.getAppWidgetInfo(appWidgetId).
+        //todo  update changeFillInSpaceLineNum
+        //RemoteListViewService.changeFillInSpaceLineNum(15);
+
+        int minW=newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+        int maxW=newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
+        int minH=newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+        int maxH=newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
+
+        Log.d(TAG,"min wid:"+minW +"max wid:"+maxW +"min h:"+minH +"max h:"+maxH);
+    }
+
     private int getTopPageId(Context context, DatabaseManager databaseManager, int widgetId) {
        /* NoteItem noteItem;
         noteItem = databaseManager.getItem(databaseManager.queryTopPageItem(widgetId));
@@ -129,33 +134,11 @@ public class NoteWidgetProvider extends AppWidgetProvider {
         return 0;
     }
 
-    private void initWidgetDatabase(Context context, AppWidgetManager appWidgetManager, int widgetId) {
-        IDatabaseManager databaseManager = DatabaseManager.getInstance(context);
-        /*if (databaseManager.queryItemByWidgetId(widgetId).getCount() != 0) {
-            Log.i(TAG, "该widget已经生成过啦");
-            int topPage = databaseManager.getTopPageId(widgetId);
-            RemoteViews showTopPage = new RemoteViews(context.getPackageName(), R.layout.list_view_adapter);
-            showTopPage.setDisplayedChild(R.id.page_list_view, topPage);
-            return;
-        }
+    private int calculateLineNum(AppWidgetManager appWidgetManager, int appWidgetId){
 
-        for (int i = 0; i < pagesCount; i++) {
-            NoteItem noteItem = new NoteItem(Constant.INIT_NOTE_TITLE);
-            noteItem.setContent(Constant.INIT_NOTE_CONTENT);
-            noteItem.setPageId(i);
-            if (i == 0) {
-                noteItem.setFavorite(1);
-            }
-            noteItem.setWidgetId(widgetId);
-            noteItem.setWritingDate(Utils.dateToString(new Date(System.currentTimeMillis())));
-            databaseManager.addItem(noteItem);
-        }
-
-        databaseManager.changedFlagToTrue(widgetId);
-        appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.page_list_view);*/
-
+        appWidgetManager.getAppWidgetOptions(appWidgetId);
+        return 15;
     }
-
     /**
      * 第一个 widget被添加时调用
      *
@@ -166,6 +149,7 @@ public class NoteWidgetProvider extends AppWidgetProvider {
         databaseManager = DatabaseManager.getInstance(context);
         // Enter relevant functionality for when the first widget is created
         Log.i(TAG, "note widget onEnabled");
+        enabled = true;
     }
 
     /**
@@ -191,6 +175,7 @@ public class NoteWidgetProvider extends AppWidgetProvider {
         for (int appwidgetId : appWidgetIds) {
             Log.e(TAG, "delete widgetId " + appwidgetId);
             databaseManager.deleteNoteItemByWId(appwidgetId);
+            RemoteListViewService.changeFillInSpaceLineNum(appwidgetId,0,true);
         }
     }
 

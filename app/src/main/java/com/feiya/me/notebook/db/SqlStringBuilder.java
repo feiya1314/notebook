@@ -4,17 +4,15 @@ import android.util.Log;
 
 import com.feiya.me.notebook.utils.Utils;
 
+import static com.feiya.me.notebook.Constant.AND;
+import static com.feiya.me.notebook.Constant.EQ;
+import static com.feiya.me.notebook.Constant.FROM;
+import static com.feiya.me.notebook.Constant.OR;
+import static com.feiya.me.notebook.Constant.SPACE;
+
 public class SqlStringBuilder {
     private static final String TAG = SqlStringBuilder.class.getSimpleName();
     private StringBuilder sb = new StringBuilder();
-    private static String SPACE = " ";
-    private static String EQ = "=";
-    private static String GT = ">";
-    private static String LT = "<";
-    private static String AND = "AND";
-    private static String OR = "OR";
-    private static String FROM = "FROM";
-
 
     public SqlStringBuilder getBuilder(){
         return new SqlStringBuilder();

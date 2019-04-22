@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -18,13 +19,16 @@ import com.feiya.me.notebook.utils.Utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by feiya on 2019/3/15.
  */
 public class RemoteListViewService extends RemoteViewsService {
-
+    private static String contentEnd;
+    private static SparseIntArray fillInSpaceLineNum = new SparseIntArray();
     private static final String TAG = RemoteListViewService.class.getSimpleName();
     private static final int pagesCount = 1;
 
@@ -32,6 +36,13 @@ public class RemoteListViewService extends RemoteViewsService {
         Log.i(TAG, "RemoteListViewService was constructed");
     }
 
+    public static void changeFillInSpaceLineNum(int widgetId, int lineNum, boolean delete){
+        if(delete) {
+            fillInSpaceLineNum.removeAt(widgetId);
+            return;
+        }
+        fillInSpaceLineNum.put(widgetId, lineNum);
+    }
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         Log.i(TAG, "onGetViewFactory");
@@ -115,7 +126,11 @@ public class RemoteListViewService extends RemoteViewsService {
 
             Log.i(TAG, "getViewFromService mWidgetId: " + mWidgetId + " position : " + position);
             remoteViews.setTextViewText(R.id.note_title, noteItems.get(position).getTitle());
-            remoteViews.setTextViewText(R.id.note_content, noteItems.get(position).getContent());
+            String changedTime = noteItems.get(position).getModifyDate();
+            if (Utils.isStringEmpty(changedTime)){
+                changedTime = noteItems.get(position).getWritingDate();
+            }
+            remoteViews.setTextViewText(R.id.note_content, noteItems.get(position).getContent() + getContentEnd(changedTime, mWidgetId));
 
             Intent collectionIntent = new Intent();
             collectionIntent.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
@@ -127,6 +142,20 @@ public class RemoteListViewService extends RemoteViewsService {
             return remoteViews;
         }
 
+        private String getContentEnd(String lastChangedDate, int widgetId){
+            if (Utils.isStringEmpty(contentEnd)){
+                contentEnd = getFillInSpace(fillInSpaceLineNum.get(widgetId));
+            }
+            return Constant.LAST_CHANGED_TIME + lastChangedDate + contentEnd +".";
+        }
+
+        private String getFillInSpace(int lineNum){
+            StringBuilder sb = new StringBuilder();
+            for (int i=0;i<lineNum;i++){
+                sb.append(Constant.NEXT_LINE);
+            }
+            return sb.toString();
+        }
         /**
          * @return Count of items.
          */
