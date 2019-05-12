@@ -13,10 +13,18 @@ import com.feiya.me.notebook.service.RemoteListViewService;
 
 public class WidgetDataChangedReceiver extends BroadcastReceiver {
     private static final String TAG = WidgetDataChangedReceiver.class.getSimpleName();
+
     @Override
     public void onReceive(Context context, Intent intent) {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         String action = intent.getAction();
+        Log.i(TAG, "WidgetDataChangedReceiver action : " + action);
+        switch (action) {
+            case Constant.LINE_CHECK_BOX_ACTION:
+                return;
+            default:
+                break;
+        }
         int widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         int pageId = intent.getIntExtra(Constant.PAGE_ID, 0);
         Log.i(TAG, "WidgetDataChangedReceiver action : " + action + " widgetId : " + widgetId + " pageId : " + pageId);
@@ -29,6 +37,7 @@ public class WidgetDataChangedReceiver extends BroadcastReceiver {
 
         remoteViews.setRemoteAdapter(R.id.page_list_view, listViewServiceDataChangedIntent);
 
+        //通知 RemoteListViewService 调用 onDataSetChanged
         appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.page_list_view);
     }
 }

@@ -71,6 +71,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(Constant.CREATE_NOTE_TABLE);
+        db.execSQL(Constant.CREATE_CHECKBOX_LINE_TABLE);
     }
 
     /**

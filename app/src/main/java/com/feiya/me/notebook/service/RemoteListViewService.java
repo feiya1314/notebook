@@ -4,45 +4,50 @@ import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 import android.util.SparseIntArray;
+import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
+import android.widget.TextView;
 
 import com.feiya.me.notebook.Constant;
 import com.feiya.me.notebook.R;
 import com.feiya.me.notebook.db.DatabaseManager;
 import com.feiya.me.notebook.db.IDatabaseManager;
+import com.feiya.me.notebook.model.CheckBoxTextLine;
 import com.feiya.me.notebook.model.NoteItem;
 import com.feiya.me.notebook.utils.Utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by feiya on 2019/3/15.
  */
 public class RemoteListViewService extends RemoteViewsService {
-    private static String contentEnd;
     private static SparseIntArray fillInSpaceLineNum = new SparseIntArray();
     private static final String TAG = RemoteListViewService.class.getSimpleName();
     private static final int pagesCount = 1;
 
     public RemoteListViewService() {
-        Log.i(TAG, "RemoteListViewService was constructed");
+        Log.d(TAG, "RemoteListViewService was constructed");
     }
 
-    public static void changeFillInSpaceLineNum(int widgetId, int lineNum, boolean delete){
-        if(delete) {
+    public static void changeFillInSpaceLineNum(int widgetId, int lineNum, boolean delete) {
+        Log.d(TAG, "changeFillInSpaceLineNum was called");
+        if (delete) {
             fillInSpaceLineNum.removeAt(widgetId);
             return;
         }
         fillInSpaceLineNum.put(widgetId, lineNum);
     }
+
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         Log.i(TAG, "onGetViewFactory");
@@ -88,9 +93,41 @@ public class RemoteListViewService extends RemoteViewsService {
                 String initDate = Utils.dateToString(new Date(System.currentTimeMillis()));
                 noteItem.setWritingDate(initDate);
                 noteItem.setModifyDate(initDate);
+                noteItem.setTextLines(initItem(mWidgetId, noteItem.getPageId()));
                 databaseManager.insertNoteItem(noteItem);
                 noteItems.add(noteItem);
             }
+        }
+
+        private List<CheckBoxTextLine> initItem(int mWidgetId, int pageId) {
+            List<CheckBoxTextLine> lines = new ArrayList<>(3);
+            CheckBoxTextLine line1 = new CheckBoxTextLine();
+            line1.setCheckBoxLine(Constant.NUM_FALSE);
+            line1.setCheckBoxSelected(Constant.NUM_FALSE);
+            line1.setLineId(1);
+            line1.setWidgetId(mWidgetId);
+            line1.setPageId(pageId);
+            line1.setLineText(Constant.INIT_NOTE_CONTENT);
+            lines.add(line1);
+
+            CheckBoxTextLine line2 = new CheckBoxTextLine();
+            line2.setCheckBoxLine(Constant.NUM_TRUE);
+            line2.setCheckBoxSelected(Constant.NUM_FALSE);
+            line2.setLineId(1);
+            line2.setWidgetId(mWidgetId);
+            line2.setPageId(pageId);
+            line2.setLineText(Constant.INIT_NOTE_CONTENT);
+            lines.add(line2);
+
+            CheckBoxTextLine line3 = new CheckBoxTextLine();
+            line3.setCheckBoxLine(Constant.NUM_TRUE);
+            line3.setCheckBoxSelected(Constant.NUM_TRUE);
+            line3.setLineId(1);
+            line3.setWidgetId(mWidgetId);
+            line3.setPageId(pageId);
+            line3.setLineText(Constant.INIT_NOTE_CONTENT);
+            lines.add(line3);
+            return lines;
         }
 
         /**
@@ -124,38 +161,100 @@ public class RemoteListViewService extends RemoteViewsService {
         public RemoteViews getViewAt(int position) {
             RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.notepage);
 
+            NoteItem noteItem = noteItems.get(position);
             Log.i(TAG, "getViewFromService mWidgetId: " + mWidgetId + " position : " + position);
-            remoteViews.setTextViewText(R.id.note_title, noteItems.get(position).getTitle());
-            String changedTime = noteItems.get(position).getModifyDate();
-            if (Utils.isStringEmpty(changedTime)){
-                changedTime = noteItems.get(position).getWritingDate();
+            remoteViews.setTextViewText(R.id.note_title, noteItem.getTitle());
+            String changedTime = noteItem.getModifyDate();
+            if (Utils.isStringEmpty(changedTime)) {
+                changedTime = noteItem.getWritingDate();
             }
-            remoteViews.setTextViewText(R.id.note_content, noteItems.get(position).getContent() + getContentEnd(changedTime, mWidgetId));
+            //Drawable drawable = ResourcesCompat.getDrawable(getResources(),R.drawable.ic_circlip,null);
+            //getResources().getDrawable()
+            //remoteViews.setTextViewText(R.id.note_content, noteItems.get(position).getContent() + getContentEnd(changedTime, mWidgetId));
 
-            Intent collectionIntent = new Intent();
+            /*RemoteViews singleLineView = new RemoteViews(getPackageName(), R.layout.single_note_line);
+            singleLineView.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
+            singleLineView.setCharSequence(R.id.singleLineText, "setText", "ttttttttttttttttttttttttttttttttttttttttttttttttttttttttt");
+            //为imageview设置drable
+            singleLineView.setImageViewResource(R.id.singleLineCheckBox, R.drawable.ic_circlip);
+
+            RemoteViews singleLineView2 = new RemoteViews(getPackageName(), R.layout.single_note_line);
+            singleLineView2.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
+            singleLineView2.setCharSequence(R.id.singleLineText, "setText", "ttttttttttttttttt爱说大话哈哈说的话哈和很大声的啊tttttttttttttttttttttt");
+            // singleLineView.setBoolean(R.id.singleLineCheckBox,"setChecked",true);
+            //为imageview设置drable
+            singleLineView2.setImageViewResource(R.id.singleLineCheckBox, R.drawable.ic_circlip);*/
+
+            for (CheckBoxTextLine checkBoxTextLine : noteItem.getTextLines()) {
+                RemoteViews singleLineView = new RemoteViews(getPackageName(), R.layout.single_note_line);
+                singleLineView.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
+                if (checkBoxTextLine.getCheckBoxLine() == Constant.NUM_TRUE) {
+                    if (checkBoxTextLine.getCheckBoxSelected() == Constant.NUM_TRUE) {
+
+                    }
+                }
+            }
+
+            RemoteViews endLineView = new RemoteViews(getPackageName(), R.layout.single_note_line);
+            //endLineView.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
+            endLineView.setCharSequence(R.id.singleLineText, "setText", getContentEnd(changedTime, mWidgetId));
+            /*ImageView imageView = null;
+            imageView.setImageBitmap();
+            imageView.setImageDrawable();
+            imageView.setImageResource();*/
+
+            /*Intent collectionIntent = new Intent();
+            collectionIntent.setAction("CONTENT");
             collectionIntent.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             collectionIntent.putExtra(Constant.PAGE_ID, position + 1);
+            collectionIntent.putExtra("CONTENT", "CONTENT");*/
 
-            remoteViews.setOnClickFillInIntent(R.id.note_title, collectionIntent);
-            remoteViews.setOnClickFillInIntent(R.id.note_content, collectionIntent);
+            Intent collectionIntent3 = new Intent();
+            collectionIntent3.setAction("TITLE");
+            collectionIntent3.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            collectionIntent3.putExtra(Constant.PAGE_ID, position + 1);
+
+            Intent collectionIntent2 = new Intent();
+            collectionIntent2.setAction(Constant.LINE_CHECK_BOX_ACTION);
+            collectionIntent2.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            collectionIntent2.putExtra(Constant.PAGE_ID, position + 1);
+            collectionIntent2.putExtra("BOXCHECK", "checkbox");
+
+
+            //singleLineView.setOnClickFillInIntent(R.id.singleLineCheckBox,collectionIntent2);
+           /* remoteViews.addView(R.id.page1, singleLineView);
+            remoteViews.addView(R.id.page1, singleLineView2);*/
+
+            Intent collectionEndLineIntent = new Intent();
+
+            collectionEndLineIntent.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            collectionEndLineIntent.putExtra(Constant.PAGE_ID, position + 1);
+            collectionEndLineIntent.putExtra("ENDLINE", "ENDLINE");
+
+            remoteViews.addView(R.id.page1, endLineView);
+            remoteViews.setOnClickFillInIntent(R.id.singleLineText, collectionEndLineIntent);
+
+            remoteViews.setOnClickFillInIntent(R.id.singleLineCheckBox, collectionIntent2);
+            remoteViews.setOnClickFillInIntent(R.id.note_title, collectionIntent3);
+            //remoteViews.setOnClickFillInIntent(R.id.note_content, collectionIntent);
 
             return remoteViews;
         }
 
-        private String getContentEnd(String lastChangedDate, int widgetId){
-            if (Utils.isStringEmpty(contentEnd)){
-                contentEnd = getFillInSpace(fillInSpaceLineNum.get(widgetId));
-            }
-            return Constant.LAST_CHANGED_TIME + lastChangedDate + contentEnd +".";
+        private String getContentEnd(String lastChangedDate, int widgetId) {
+            int lineNum = fillInSpaceLineNum.get(widgetId);
+            Log.d(TAG, "lineNum : " + lineNum);
+            return Constant.LAST_CHANGED_TIME + lastChangedDate + getFillInSpace(lineNum) + ".";
         }
 
-        private String getFillInSpace(int lineNum){
+        private String getFillInSpace(int lineNum) {
             StringBuilder sb = new StringBuilder();
-            for (int i=0;i<lineNum;i++){
+            for (int i = 0; i < lineNum; i++) {
                 sb.append(Constant.NEXT_LINE);
             }
             return sb.toString();
         }
+
         /**
          * @return Count of items.
          */

@@ -2,11 +2,12 @@ package com.feiya.me.notebook.model;
 
 import com.feiya.me.notebook.Constant;
 
+import java.util.List;
+
 /**
  * Created by feiya on 2016/9/17.
  */
 public class NoteItem {
-
     private String content = Constant.INIT_NOTE_CONTENT;
     private String writingDate;
     private String modifyDate;
@@ -18,6 +19,7 @@ public class NoteItem {
     private int widgetId;
     private int changedFlag = 0;
     private int deleted = 0;
+    private List<CheckBoxTextLine> textLines;
 
 
     public NoteItem() {
@@ -114,5 +116,13 @@ public class NoteItem {
 
     public void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
+    }
+
+    public List<CheckBoxTextLine> getTextLines() {
+        return textLines;
+    }
+
+    public void setTextLines(List<CheckBoxTextLine> textLines) {
+        this.textLines = textLines;
     }
 }

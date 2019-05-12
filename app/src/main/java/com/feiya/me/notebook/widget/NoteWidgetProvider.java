@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.widget.RemoteViews;
 
 import com.feiya.me.notebook.Constant;
@@ -16,16 +17,18 @@ import com.feiya.me.notebook.activity.EditNoteActivity;
 import com.feiya.me.notebook.db.DatabaseManager;
 import com.feiya.me.notebook.db.IDatabaseManager;
 import com.feiya.me.notebook.service.RemoteListViewService;
+import com.feiya.me.notebook.utils.Utils;
 
 /**
  * Implementation of App Widget functionality.
  */
 public class NoteWidgetProvider extends AppWidgetProvider {
-
+    private static SparseIntArray fillInSpaceLineInitNum = new SparseIntArray();
     private static final String TAG = NoteWidgetProvider.class.getSimpleName();
     private IDatabaseManager databaseManager;
     private int pagesCount = 10;
-    private boolean enabled = false;
+    private int contentTextSize = 13;
+    private boolean enabled = true;
 
     /*private Map<Integer, Object> initWidgetMap = new HashMap<>();*/
 
@@ -38,11 +41,13 @@ public class NoteWidgetProvider extends AppWidgetProvider {
             /*if (initWidgetMap.get(appWidgetId) != null) {
                 continue;
             }*/
-            Log.i(TAG, "Widget :" + appWidgetId + " onUpdate");
+            Log.i(TAG, "Widget :" + appWidgetId + " onUpdate enable : " + enabled);
             registerListener(context, appWidgetManager, appWidgetId);
-            if (enabled){
-                int num = calculateLineNum(appWidgetManager,appWidgetId);
-                Log.d(TAG,"calculateLineNum appWidgetId : " + appWidgetId + " num : " + num);
+            if (enabled) {
+                int num = calculateLineNum(context,appWidgetManager, appWidgetId);
+                Log.d(TAG, "calculateLineNum appWidgetId : " + appWidgetId + " num : " + num);
+                RemoteListViewService.changeFillInSpaceLineNum(appWidgetId, num, false);
+                enabled = false;
             }
         }
     }
@@ -84,7 +89,9 @@ public class NoteWidgetProvider extends AppWidgetProvider {
         String action = intent.getAction();
         int widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         int pageId = intent.getIntExtra(Constant.PAGE_ID, 0);
-        Log.i(TAG, "provider onReceive action : " + action + " widgetId : " + widgetId + " pageId : " + pageId);
+        String cone = intent.getStringExtra("CONTENT");
+        String cone3 = intent.getStringExtra("BOXCHECK");
+        Log.i(TAG, "provider onReceive action : " + action + " widgetId : " + widgetId + " pageId : " + pageId + "   cone："+cone +"   BOXCHECK："+cone3);
 
         switch (action) {
             case Constant.COLLECTION_VIEW_ACTION: {
@@ -97,6 +104,7 @@ public class NoteWidgetProvider extends AppWidgetProvider {
                 context.startActivity(startActivity);
                 break;
             }
+            //case
             case Intent.ACTION_SHUTDOWN: {
                 Log.d(TAG, "shutdown");
                 //databaseManager.topPageInit();
@@ -116,13 +124,23 @@ public class NoteWidgetProvider extends AppWidgetProvider {
         //appWidgetManager.getAppWidgetInfo(appWidgetId).
         //todo  update changeFillInSpaceLineNum
         //RemoteListViewService.changeFillInSpaceLineNum(15);
+        int lineNum = calculateLineNum(context, appWidgetManager, appWidgetId);
+        Log.d(TAG, "onAppWidgetOptionsChanged : lineNum : " + lineNum);
+        RemoteListViewService.changeFillInSpaceLineNum(appWidgetId, lineNum, false);
+        //Bundle bundle = appWidgetManager.getAppWidgetOptions(appWidgetId);
+        /*int oldminW = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+        int oldmaxW = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
+        int oldminH = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+        int oldmaxH = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);*/
 
-        int minW=newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
-        int maxW=newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
-        int minH=newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
-        int maxH=newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
+        //Log.d(TAG, "oldmin wid:" + oldminW + "oldmax wid:" + oldmaxW + "oldmin h:" + oldminH + "oldmax h:" + oldmaxH);
 
-        Log.d(TAG,"min wid:"+minW +"max wid:"+maxW +"min h:"+minH +"max h:"+maxH);
+        /*int minW = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+        int maxW = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
+        int minH = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+        int maxH = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);*/
+
+        //Log.d(TAG, "min wid:" + minW + "max wid:" + maxW + "min h:" + minH + "max h:" + maxH);
     }
 
     private int getTopPageId(Context context, DatabaseManager databaseManager, int widgetId) {
@@ -134,11 +152,19 @@ public class NoteWidgetProvider extends AppWidgetProvider {
         return 0;
     }
 
-    private int calculateLineNum(AppWidgetManager appWidgetManager, int appWidgetId){
+    private int calculateLineNum(Context context,AppWidgetManager appWidgetManager, int appWidgetId) {
 
-        appWidgetManager.getAppWidgetOptions(appWidgetId);
-        return 15;
+        Bundle bundle = appWidgetManager.getAppWidgetOptions(appWidgetId);
+        int maxH = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
+        int minW = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+
+        //int dpSize = Utils.sp2dp(context,contentTextSize);
+        Log.d(TAG, "min wid: " + minW + " max h: " + maxH);
+        //int lineTextNum = minW/contentTextSize;
+
+        return maxH / contentTextSize -5;
     }
+
     /**
      * 第一个 widget被添加时调用
      *
@@ -149,7 +175,6 @@ public class NoteWidgetProvider extends AppWidgetProvider {
         databaseManager = DatabaseManager.getInstance(context);
         // Enter relevant functionality for when the first widget is created
         Log.i(TAG, "note widget onEnabled");
-        enabled = true;
     }
 
     /**
@@ -175,7 +200,7 @@ public class NoteWidgetProvider extends AppWidgetProvider {
         for (int appwidgetId : appWidgetIds) {
             Log.e(TAG, "delete widgetId " + appwidgetId);
             databaseManager.deleteNoteItemByWId(appwidgetId);
-            RemoteListViewService.changeFillInSpaceLineNum(appwidgetId,0,true);
+            RemoteListViewService.changeFillInSpaceLineNum(appwidgetId, 0, true);
         }
     }
 

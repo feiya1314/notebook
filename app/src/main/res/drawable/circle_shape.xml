@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval"
+    android:useLevel="false">
+
+    <solid android:color="@color/colorDivider" />
+    <stroke
+        android:width="0.5dp"
+        android:color="@color/button_save_text_color" />
+    <size
+        android:width="3dp"
+        android:height="3dp" />
+</shape>

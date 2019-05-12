@@ -18,7 +18,7 @@
         android:textSize="14sp"
         android:maxLength="20"
         tools:text="page1"/>
-    <TextView
+    <!--<TextView
         android:id="@+id/note_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -29,6 +29,13 @@
         android:layout_gravity="center_horizontal"
         android:textColor="@color/note_text_color"
         android:scrollbars="vertical"
-        android:textSize="13sp"/>
+        android:textSize="13sp"/>-->
+  <!--  <LinearLayout
+        android:id="@+id/checkboxline"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </LinearLayout>-->
 
 </LinearLayout>
