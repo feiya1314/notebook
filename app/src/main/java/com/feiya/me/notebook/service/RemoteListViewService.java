@@ -184,9 +184,10 @@ public class RemoteListViewService extends RemoteViewsService {
             singleLineView2.setImageViewResource(R.id.singleLineCheckBox, R.drawable.ic_circlip);*/
 
             for (CheckBoxTextLine checkBoxTextLine : noteItem.getTextLines()) {
-                RemoteViews singleLineView = new RemoteViews(getPackageName(), R.layout.single_note_line);
-                singleLineView.setCharSequence(R.id.singleLineText, "setText", checkBoxTextLine.getLineText());
+                RemoteViews singleLineView = null;
+
                 if (checkBoxTextLine.getCheckBoxLine() == Constant.NUM_TRUE) {
+                    singleLineView = new RemoteViews(getPackageName(), R.layout.single_note_line);
                     //为checkbox设置是否选中 和 下划线
                     if (checkBoxTextLine.getCheckBoxSelected() == Constant.NUM_TRUE) {
                         singleLineView.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
@@ -194,6 +195,9 @@ public class RemoteListViewService extends RemoteViewsService {
                     }else {
                         singleLineView.setImageViewResource(R.id.singleLineCheckBox, R.drawable.ic_circlip);
                     }
+                }else {
+                    singleLineView = new RemoteViews(getPackageName(), R.layout.normal_single_note_line);
+                    singleLineView.setCharSequence(R.id.normalSingleLineText, "setText", checkBoxTextLine.getLineText());
                 }
 
                 Intent checkBoxIntent = new Intent();
@@ -202,12 +206,16 @@ public class RemoteListViewService extends RemoteViewsService {
                 checkBoxIntent.putExtra("CHECK_BOX", "checkbox");
 
                 remoteViews.addView(R.id.page1, singleLineView);
-                remoteViews.setOnClickFillInIntent(R.id.singleLineCheckBox, checkBoxIntent);
+                if (checkBoxTextLine.getCheckBoxLine() == Constant.NUM_TRUE) {
+                    remoteViews.setOnClickFillInIntent(R.id.singleLineCheckBox, checkBoxIntent);
+                }else {
+                    remoteViews.setOnClickFillInIntent(R.id.normalSingleLineText, checkBoxIntent);
+                }
             }
 
-            RemoteViews endLineView = new RemoteViews(getPackageName(), R.layout.single_note_line);
+            RemoteViews endLineView = new RemoteViews(getPackageName(), R.layout.normal_single_note_line);
             //endLineView.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
-            endLineView.setCharSequence(R.id.singleLineText, "setText", getContentEnd(changedTime, mWidgetId));
+            endLineView.setCharSequence(R.id.normalSingleLineText, "setText", getContentEnd(changedTime, mWidgetId));
 
             /*Intent collectionIntent = new Intent();
             collectionIntent.setAction("CONTENT");
