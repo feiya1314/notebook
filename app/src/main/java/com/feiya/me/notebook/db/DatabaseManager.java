@@ -89,7 +89,7 @@ public class DatabaseManager implements IDatabaseManager {
         contentValues.put("checkBoxSelected", checkBoxTextLine.getCheckBoxSelected());
         contentValues.put("lineText", checkBoxTextLine.getLineText());
 
-        return db.insert(Constant.TABLE_WIDGET_NAME, null, contentValues);
+        return db.insert(Constant.TABLE_WIDGET_CHECKBOXLINE, null, contentValues);
     }
 
     public List<CheckBoxTextLine> queryCheckBoxLine(int widgetId, int pageId){

@@ -113,7 +113,7 @@ public class RemoteListViewService extends RemoteViewsService {
             CheckBoxTextLine line2 = new CheckBoxTextLine();
             line2.setCheckBoxLine(Constant.NUM_TRUE);
             line2.setCheckBoxSelected(Constant.NUM_FALSE);
-            line2.setLineId(1);
+            line2.setLineId(2);
             line2.setWidgetId(mWidgetId);
             line2.setPageId(pageId);
             line2.setLineText(Constant.INIT_NOTE_CONTENT);
@@ -122,7 +122,7 @@ public class RemoteListViewService extends RemoteViewsService {
             CheckBoxTextLine line3 = new CheckBoxTextLine();
             line3.setCheckBoxLine(Constant.NUM_TRUE);
             line3.setCheckBoxSelected(Constant.NUM_TRUE);
-            line3.setLineId(1);
+            line3.setLineId(3);
             line3.setWidgetId(mWidgetId);
             line3.setPageId(pageId);
             line3.setLineText(Constant.INIT_NOTE_CONTENT);
