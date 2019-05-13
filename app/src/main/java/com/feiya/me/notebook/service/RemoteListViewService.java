@@ -162,14 +162,13 @@ public class RemoteListViewService extends RemoteViewsService {
             RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.notepage);
 
             NoteItem noteItem = noteItems.get(position);
+            int itemPos = position +1;
             Log.i(TAG, "getViewFromService mWidgetId: " + mWidgetId + " position : " + position);
             remoteViews.setTextViewText(R.id.note_title, noteItem.getTitle());
             String changedTime = noteItem.getModifyDate();
             if (Utils.isStringEmpty(changedTime)) {
                 changedTime = noteItem.getWritingDate();
             }
-            //Drawable drawable = ResourcesCompat.getDrawable(getResources(),R.drawable.ic_circlip,null);
-            //getResources().getDrawable()
             //remoteViews.setTextViewText(R.id.note_content, noteItems.get(position).getContent() + getContentEnd(changedTime, mWidgetId));
 
             /*RemoteViews singleLineView = new RemoteViews(getPackageName(), R.layout.single_note_line);
@@ -181,27 +180,34 @@ public class RemoteListViewService extends RemoteViewsService {
             RemoteViews singleLineView2 = new RemoteViews(getPackageName(), R.layout.single_note_line);
             singleLineView2.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
             singleLineView2.setCharSequence(R.id.singleLineText, "setText", "ttttttttttttttttt爱说大话哈哈说的话哈和很大声的啊tttttttttttttttttttttt");
-            // singleLineView.setBoolean(R.id.singleLineCheckBox,"setChecked",true);
             //为imageview设置drable
             singleLineView2.setImageViewResource(R.id.singleLineCheckBox, R.drawable.ic_circlip);*/
 
             for (CheckBoxTextLine checkBoxTextLine : noteItem.getTextLines()) {
                 RemoteViews singleLineView = new RemoteViews(getPackageName(), R.layout.single_note_line);
-                singleLineView.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
+                singleLineView.setCharSequence(R.id.singleLineText, "setText", checkBoxTextLine.getLineText());
                 if (checkBoxTextLine.getCheckBoxLine() == Constant.NUM_TRUE) {
+                    //为checkbox设置是否选中 和 下划线
                     if (checkBoxTextLine.getCheckBoxSelected() == Constant.NUM_TRUE) {
-
+                        singleLineView.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
+                        singleLineView.setImageViewResource(R.id.singleLineCheckBox, R.drawable.ic_circle);
+                    }else {
+                        singleLineView.setImageViewResource(R.id.singleLineCheckBox, R.drawable.ic_circlip);
                     }
                 }
+
+                Intent checkBoxIntent = new Intent();
+                checkBoxIntent.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                checkBoxIntent.putExtra(Constant.PAGE_ID, itemPos);
+                checkBoxIntent.putExtra("CHECK_BOX", "checkbox");
+
+                remoteViews.addView(R.id.page1, singleLineView);
+                remoteViews.setOnClickFillInIntent(R.id.singleLineCheckBox, checkBoxIntent);
             }
 
             RemoteViews endLineView = new RemoteViews(getPackageName(), R.layout.single_note_line);
             //endLineView.setInt(R.id.singleLineText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG);
             endLineView.setCharSequence(R.id.singleLineText, "setText", getContentEnd(changedTime, mWidgetId));
-            /*ImageView imageView = null;
-            imageView.setImageBitmap();
-            imageView.setImageDrawable();
-            imageView.setImageResource();*/
 
             /*Intent collectionIntent = new Intent();
             collectionIntent.setAction("CONTENT");
@@ -209,16 +215,7 @@ public class RemoteListViewService extends RemoteViewsService {
             collectionIntent.putExtra(Constant.PAGE_ID, position + 1);
             collectionIntent.putExtra("CONTENT", "CONTENT");*/
 
-            Intent collectionIntent3 = new Intent();
-            collectionIntent3.setAction("TITLE");
-            collectionIntent3.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            collectionIntent3.putExtra(Constant.PAGE_ID, position + 1);
 
-            Intent collectionIntent2 = new Intent();
-            collectionIntent2.setAction(Constant.LINE_CHECK_BOX_ACTION);
-            collectionIntent2.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            collectionIntent2.putExtra(Constant.PAGE_ID, position + 1);
-            collectionIntent2.putExtra("BOXCHECK", "checkbox");
 
 
             //singleLineView.setOnClickFillInIntent(R.id.singleLineCheckBox,collectionIntent2);
@@ -228,13 +225,24 @@ public class RemoteListViewService extends RemoteViewsService {
             Intent collectionEndLineIntent = new Intent();
 
             collectionEndLineIntent.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            collectionEndLineIntent.putExtra(Constant.PAGE_ID, position + 1);
+            collectionEndLineIntent.putExtra(Constant.PAGE_ID, itemPos);
             collectionEndLineIntent.putExtra("ENDLINE", "ENDLINE");
 
             remoteViews.addView(R.id.page1, endLineView);
             remoteViews.setOnClickFillInIntent(R.id.singleLineText, collectionEndLineIntent);
 
-            remoteViews.setOnClickFillInIntent(R.id.singleLineCheckBox, collectionIntent2);
+            Intent collectionIntent3 = new Intent();
+            collectionIntent3.setAction("TITLE");
+            collectionIntent3.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            collectionIntent3.putExtra(Constant.PAGE_ID, itemPos);
+
+            Intent collectionIntent2 = new Intent();
+            collectionIntent2.setAction(Constant.LINE_CHECK_BOX_ACTION);
+            collectionIntent2.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            collectionIntent2.putExtra(Constant.PAGE_ID, itemPos);
+            collectionIntent2.putExtra("BOXCHECK", "checkbox");
+
+            //remoteViews.setOnClickFillInIntent(R.id.singleLineCheckBox, collectionIntent2);
             remoteViews.setOnClickFillInIntent(R.id.note_title, collectionIntent3);
             //remoteViews.setOnClickFillInIntent(R.id.note_content, collectionIntent);
 

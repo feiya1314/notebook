@@ -25,7 +25,7 @@ public interface Constant {
             + "pageId integer,"
             + "lineId integer,"
             + "checkBoxLine integer,"
-            + "checkBoxSelected text,"
+            + "checkBoxSelected integer,"
             + "lineText text,"
             + "PRIMARY KEY(widgetId,pageId,lineId)" +
             ")";
@@ -36,6 +36,7 @@ public interface Constant {
     String COLLECTION_VIEW_EXTRA = "com.feiya.me.notewidget.COLLECTION_VIEW_EXTRA";
     String LINE_CHECK_BOX_ACTION = "com.feiya.me.notewidget.LINE_CHECK_BOX_ACTION";
     String PAGE_ID = "com.feiya.me.notewidget.PAGE_ID";
+    String CHECK_BOX = "com.feiya.me.notewidget.CHECKBOX";
     String DATA_CHANGED_ACTION = "com.feiya.me.notewidget.DATA_CHANGED_ACTION";
     String INIT_NOTE_TITLE = "在此输入标题";
     String INIT_NOTE_CONTENT = "在此输入记事. 小提示：可通过底部左右箭头翻页！";
