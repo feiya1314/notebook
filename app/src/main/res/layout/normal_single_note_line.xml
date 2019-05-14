@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/normalsingleline"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:orientation="horizontal">
+    <!--AdapterViewFlipper中具体的内容会通过remoteview返回给widget，所以此处显示的是空白-->
+    <!--   android:alpha="1"-->
+    <!--<CheckBox
+        android:id="@+id/page_list_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:overScrollMode="never"
+        android:scrollbars="none" />-->
+
+    <!--<LinearLayout
+        android:id="@+id/singleLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">-->
+
+        <TextView
+            android:id="@+id/normalSingleLineText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textSize="13sp"
+            android:background="@null"
+            android:lineSpacingExtra="5dp"
+            android:text="TextViewtttttttttttttttttttttttttttttextViettttttextVietettttttttttt
+            tttttttttttttttextViettttttettttttttttttttttttttttttttextViettttttextVietttextViett" />
+    <!--</LinearLayout>-->
+
+
+    <!--empty view-->
+    <!--<TextView
+        android:id="@+id/current_page"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:text=""
+        android:textColor="@color/note_text_color" />-->
+
+
+</LinearLayout>
