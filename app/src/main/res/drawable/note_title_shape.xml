@@ -2,5 +2,6 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="@color/edit_note_background"/>
 
-    <corners android:radius="5dp"/>
+    <corners android:topLeftRadius="5dp"
+        android:topRightRadius="5dp"/>
 </shape>

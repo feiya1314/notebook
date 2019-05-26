@@ -125,7 +125,7 @@ public class RemoteListViewService extends RemoteViewsService {
             RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.notepage);
 
             Log.i(TAG, "getViewFromService mWidgetId: " + mWidgetId + " position : " + position);
-            remoteViews.setTextViewText(R.id.note_title, noteItems.get(position).getTitle());
+            //remoteViews.setTextViewText(R.id.note_title, noteItems.get(position).getTitle());
             String changedTime = noteItems.get(position).getModifyDate();
             if (Utils.isStringEmpty(changedTime)){
                 changedTime = noteItems.get(position).getWritingDate();
@@ -136,7 +136,7 @@ public class RemoteListViewService extends RemoteViewsService {
             collectionIntent.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             collectionIntent.putExtra(Constant.PAGE_ID, position + 1);
 
-            remoteViews.setOnClickFillInIntent(R.id.note_title, collectionIntent);
+            //remoteViews.setOnClickFillInIntent(R.id.note_title, collectionIntent);
             remoteViews.setOnClickFillInIntent(R.id.note_content, collectionIntent);
 
             return remoteViews;
